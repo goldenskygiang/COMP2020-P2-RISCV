@@ -1,0 +1,59 @@
+#SETUP - do not delete
+
+lui t0, 0x12345
+addi t0, t0, 0x678
+sw t0, 0(x0)
+
+lui t0, 0x13f44
+addi t0, t0, 0x64c
+sw t0, 4(x0)
+
+
+#TODO 1
+#reverse word at memaddr 0 with bitmasks, store in t0
+lw t0, 0(x0)
+
+addi x10, x0, 8
+addi x1, x0, 255
+sll x2, x1, x10
+sll x3, x2, x10
+sll x4, x3, x10
+
+and x1, x1, t0
+and x2, x2, t0
+and x3, x3, t0
+and x4, x4, t0
+
+addi x10, x0, 24
+sll x1, x1, x10
+
+addi x10, x0, 8
+sll x2, x2, x10
+
+sra x3, x3, x10
+
+addi x10, x0, 24
+sra x4, x4, x10
+
+add t0, x0, x1
+add t0, t0, x2
+add t0, t0, x3
+add t0, t0, x4
+
+#TODO 2
+#reverse word at memaddr 4 with lb/sb, store in t1
+lb x1, 4(x0)
+lb x2, 5(x0)
+lb x3, 6(x0)
+lb x4, 7(x0)
+
+sb x1, 7(x0)
+sb x2, 6(x0)
+sb x3, 5(x0)
+sb x4, 4(x0)
+
+lw t1, 4(x0)
+
+#TODO 3
+#xor both reversed words, store in t2
+xor t2, t0, t1
