@@ -15,12 +15,18 @@
       - [funct3, funct7](#funct3-funct7)
       - [LB/SB, SLT instruction signals](#lbsb-slt-instruction-signals)
   - [Execute](#execute)
+    - [Supporting circuits](#supporting-circuits)
+      - [ALU Op parser](#alu-op-parser)
+      - [SA](#sa)
+    - [R-type format](#r-type-format)
+    - [I-type format](#i-type-format)
+    - [S-type format](#s-type-format)
+    - [U-type format](#u-type-format)
   - [Memory](#memory)
   - [Write-back](#write-back)
-  - [Handling for specific instructions](#handling-for-specific-instructions)
+  - [Special handling for specific instructions](#special-handling-for-specific-instructions)
     - [SLL, SRA, LUI](#sll-sra-lui)
     - [SLT, SLTI](#slt-slti)
-
 
 ## Overview
 
@@ -47,7 +53,7 @@ The Program Counter (PC) value is stored in a register, then continuously fetche
 ### IC4
 The IC4 circuit adds 4 to the input by separating the least 2 bits 0 and 1, then incrementing 1 to bit 2 (<img src="https://render.githubusercontent.com/render/math?math=2^2">), and merging these two together by a splitter, so that the whole process can be achieved by just a single incrementer.
 
-![IC4 circuit](imgs/IC4.png)
+![IC4 circuit](imgs/ic4.png)
 
 ## Decode
 
@@ -74,7 +80,7 @@ This part detects what format type the instruction is. By getting the 7-bit opco
 |0100011|S-type|Bit 4 is off and bit 5 is on|
 |0110111|U-type|Bit 2 is on|
 
-Note that, in this circuit design, a format named IL-type is defined. IL-type is a subset of I-type format specifically for the LB and LW instructions to differentiate from other I-type instructions ADDI, ANDI, ORI, XORI, SLTI. It is not an official specification in RISC-V documentation; it is rather a convention for this project only.
+Note that, in this circuit design, a format named IL-type is defined. IL-type is a subset of I-type format specifically for the LB and LW instructions to differentiate from other I-type instructions ADDI, ANDI, ORI, XORI, SLTI. It is not an official specification in RISC-V documentation; rather it is a convention for this project only.
 
 ### Register file interface
 
@@ -120,10 +126,49 @@ In this part, FT3 and FT7 are the output of funct3 and funct7 in supported RISC-
 ![funct3, funct7](imgs/controller-funct37.png)
 
 #### LB/SB, SLT instruction signals
+The BA signal is activated whenever the instruction is either LB (Load Byte) or SB (Store Byte) to send to the Memory stage for decoding Byte Address.
+
+Since LB and SB have the same funct3 code (`010`), this part will extract the bit 1 of funct3 and check if the instruction is also either S-type or IL-type to activate the BA signal.
+
+The SLT signal is activated when the instruction is SLT or SLTI. It checks whether it is I-type (not IL-type) or R-type, then check if the funct3 is for SLT/SLTI instruction (`010`).
 
 ![LB/SB, SLT](imgs/BA-SLT.png)
 
 ## Execute
+
+After decoding instruction in the Controller circuit, parts of the instruction are sent out to their approriate function circuits.
+
+This part will be divided according to RISC-V instruction formats.
+
+![](imgs/exec.png)
+
+### Supporting circuits
+
+#### ALU Op parser
+
+This circuit receives 4 inputs: FT3, FT7 (funct3, funct7 decoded from the instruction), LUI and MemAdd signals.
+
+![ALU Op parser](imgs/ALU-op-parser.png)
+
+#### SA
+
+![Shift amount](imgs/SA.png)
+
+### R-type format
+
+Recall that R-type instructions perform the following task (with INSN be one of AND, OR, XOR, ADD, SUB):
+
+R[rd] = R[rs1] INSN R[rs2]
+
+Therefore, R-type instructions enable Write-Access to the register file, then read the data from registers rs1 and rs2, put through the ALU with proper Opcode, and save the output to the register rd.
+
+Handling for SLT, SLL, SRA is written in the later part of this document.
+
+### I-type format
+
+### S-type format
+
+### U-type format
 
 ## Memory
 
