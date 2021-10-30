@@ -51,7 +51,7 @@ At this stage, instructions from the Program ROM will be fetched to the decoder.
 The Program Counter (PC) value is stored in a register, then continuously fetched to the Program ROM and increased by 4 for each clock rising edge.
 
 ### IC4
-The IC4 circuit adds 4 to the input by separating the least 2 bits 0 and 1, then incrementing 1 to bit 2 (<img src="https://render.githubusercontent.com/render/math?math=2^2">), and merging these two together by a splitter, so that the whole process can be achieved by just a single incrementer.
+The IC4 circuit adds 4 to the input by separating the least 2 bits 0 and 1, then incrementing 1 to bit 2 (<img src="https://render.githubusercontent.com/render/math?math=2^2">), and merging these two together by a splitter, so that the whole process can be achieved by a single incrementer.
 
 ![IC4 circuit](imgs/ic4.png)
 
@@ -148,9 +148,21 @@ This part will be divided according to RISC-V instruction formats.
 
 This circuit receives 4 inputs: FT3, FT7 (funct3, funct7 decoded from the instruction), LUI and MemAdd signals.
 
+If both LUI and MemAdd are not activated, this circuit generates the Opcode for the ALU according to the FT3 and FT7 input. It assumes that the instruction is either R-type or I-type.
+
+If only LUI is activated, the circuit generates the Opcode `0010` (SLL) to be outputted, since it is controlled by the outer 2-to-4 MUX (2 select bits are LUI and MemAdd).
+
+If only MemAdd is activated (IL-type, S-type instructions), the circuit generates the Opcode `0000` (ADD) to be outputted, with the same selection mechanism as the LUI signal.
+
+If both signals are activated, then the circuit generates the Opcode `1101` (Do nothing) to the ALU.
+
 ![ALU Op parser](imgs/ALU-op-parser.png)
 
 #### SA
+
+This circuit generates the amount of shift for the ALU. It receives 2 inputs: A 32-bit input B that is directly connected to the read wire of the xB register, and a 1-bit LUI signal.
+
+If LUI is not activated, the circuit obtains the least 5 bits (0-4) of B and output them directly to the Sa input of the ALU. Else, it generates the value `01100` (`12` in decimal) for the LUI instruction.
 
 ![Shift amount](imgs/SA.png)
 
@@ -165,6 +177,12 @@ Therefore, R-type instructions enable Write-Access to the register file, then re
 Handling for SLT, SLL, SRA is written in the later part of this document.
 
 ### I-type format
+
+I-type is different from R-type that the value of the rs2 register is replaced by a 32-bit sign-extended immediate value:
+
+R[rd] = R[rs1] INSN sign_extend(imm)
+
+For that reason, a MUX is put next to the xB register read port, with 2 inputs: the value of the register xB and the immediate value. The selector bit is the OR of is_S and is_IL signal from the Controller. It means that if the instruction is either S-type or IL-type, the value B of the ALU will use the immediate value (since both formats replace R[rs2] with imm).
 
 ### S-type format
 
