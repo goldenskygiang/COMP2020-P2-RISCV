@@ -23,10 +23,15 @@
     - [S-type format](#s-type-format)
     - [U-type format](#u-type-format)
   - [Memory](#memory)
+    - [BytePos](#bytepos)
+    - [Ba2Wa](#ba2wa)
+    - [Id2Sel](#id2sel)
+    - [RamOutputFmt](#ramoutputfmt)
   - [Write-back](#write-back)
   - [Special handling for specific instructions](#special-handling-for-specific-instructions)
     - [SLL, SRA, LUI](#sll-sra-lui)
     - [SLT, SLTI](#slt-slti)
+  - [Testing strategy](#testing-strategy)
 
 ## Overview
 
@@ -188,23 +193,69 @@ For that reason, a MUX is put next to the `xB` register read port, with 2 inputs
 
 S-type instructions store bytes/words from the register to RAM. They use base and offset addressing, so the memory address needs to be computed before proceeding. The ALU is used to achieve this.
 
-Note that the address is computed in the following way: `add = sign_extend(imm) + R[rs1]`, therefore the `imm` value replaces `R[rs2]`. It can be done similarly to an I-type format with ADDI instruction.
+Note that the address is computed in the following way: `add = sign_extend(imm) + R[rs1]`, therefore the `imm` value replaces `R[rs2]`. It can be done similarly to an I-type format with `ADDI` instruction.
 
 The computed address is sent to the Memory part of the processor.
 
 ### U-type format
 
-U-type instructions replace the `R[rs1]` value with the `imm` zero-extended value, so that it can use the `SLL` instruction of the ALU. Another MUX is put in front of the `xA` register read port, with the selector bit be the `is_U` signal from the Controller circuit.
+The only U-type instruction, `LUI`, replaces `R[rs1]` value with the `imm` zero-extended value, so that it can use the `SLL` instruction of the ALU. Another MUX is put in front of the `xA` register read port, with the selector bit be the `is_U` signal from the Controller circuit.
 
 Recall that the `SLL` instruction does the following:
 
 `R[rd] = R[rs1] << R[rs2]`
 
-The only U-type instruction, `LUI`, shifts `imm` 12 bits to the right.
+The `LUI` instruction shifts `imm` 12 bits to the right.
 
-The ALU Op parser sends the Opcode `0010` to the ALU as the instruction is of U-type, and the SA circuit sends `12` as the shift amount.
+The ALU Op parser sends the Opcode `0010` to the ALU for `SLL` instruction and the SA circuit sends `12` as the shift amount.
 
 ## Memory
+
+At this stage, either new data is written into RAM or existing data from RAM is taken, depending on whether the instruction is of S-type or IL-type.
+
+![Memory stage](imgs/memory.png)
+
+### BytePos
+
+This circuit receives 3 inputs: the `Id` representing the byte position in a word, the word-length data `DataIn` to be selected from, and the signal `BA` signifying whether to output selected byte.
+
+The circuit is used to support `SB/SW` instructions.
+
+If the instruction is `SW`, the whole `DataIn` is outputted without modification.
+
+If the instruction is `SB`, the circuit picks the lowest 8 bits of `DataIn`, then put it back to the byte position `Id` of the output. All other bytes are written 0. Since RAM requires a bit selector to write byte to the memory, and it writes the byte at position `x` from the input word to byte position `x` in the word memory, it is necessary that the position of the extracted byte match that of the specified byte position `Id`.
+
+Recall that according to the official RISC-V ISA Manual, `SB` instruction stores **8-bit values from the low bits** of register `rs2` to memory. 
+
+![](imgs/bytepos.png)
+
+### Ba2Wa
+
+This circuit translates the memory byte-address to word-address and extract access byte if the instruction asks for loading/storing byte data.
+
+The circuit receives 3 inputs: the computed address `Add` from the ALU, `DataIn` for write, and the `BA` signal specifying whether this instruction works with byte instead of word.
+
+Bits 0-21 of `Add` are extracted, then the least 2 bits are separated from those bit to output `Id`, which is the position of the selected byte from the Word address. The other 20 bits are used as the word address `WA` in the RAM.
+
+`Id` and `DataIn` go through the circuit BytePos to get the formatted output `DataOut`.
+
+![BA to WA](imgs/ba2wa.png)
+
+### Id2Sel
+
+This circuit converts the `Id` byte position to the actual 4-bit bit selector for the RAM to work.
+
+The circuit receives two inputs: `Id` and the signal `BA` indicating the load/store instructions deal with byte or not.
+
+If `BA` is not activated, then the instruction deals with word. It simply outputs `1111` to select all bytes in a word.
+
+If `BA` is activated, then `Id` goes through a 2-to-4 decoder to turn on the desired bit selector.
+
+![ID to bit selector](imgs/id2sel.png)
+
+### RamOutputFmt
+
+![RAM output formatter](imgs/ramoutputfmt.png)
 
 ## Write-back
 
@@ -213,3 +264,7 @@ The ALU Op parser sends the Opcode `0010` to the ALU as the instruction is of U-
 ### SLL, SRA, LUI
 
 ### SLT, SLTI
+
+## Testing strategy
+
+The test file is written by hand with random values. It covers all specified instructions above.
