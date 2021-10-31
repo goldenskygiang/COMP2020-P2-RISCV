@@ -85,7 +85,7 @@ This part detects what format type the instruction is. By getting the 7-bit opco
 |0**10**0011|S-type|Bit 4 is off and bit 5 is on|
 |0110**1**11|U-type|Bit 2 is on|
 
-Note that, in this circuit design, a format named IL-type is defined. IL-type is a subset of I-type format specifically for the `LB` and `LW` instructions to differentiate from other I-type instructions `ADDI, ANDI, ORI, XORI, SLTI`. It is not an official specification in RISC-V documentation; rather it is a convention for this project only.
+Note that, in this circuit design, a format named IL-type is defined. IL-type is a subset of I-type format specific to the `LB` and `LW` instructions to differentiate from other I-type instructions `ADDI, ANDI, ORI, XORI, SLTI`. It is not an official specification in RISC-V documentation; rather it is a convention for this project only.
 
 ### Register file interface
 
@@ -299,4 +299,6 @@ The signal `SLT` is activated whenever the instruction is either `SLT` or `SLTI`
 
 ## Testing strategy
 
-The test file is written by hand with random values. It covers all specified instructions above.
+The testing strategy for this processor is to ensure that the datapath, ALU opcode (if necessary) and handling of memory (if necessary) for each instruction is correct, therefore guarantees that each instruction will work as expected.
+
+The test file is written by hand with random values. It covers all specified instructions above. Some noticeable mistakes in value behavior and component wiring are commented in the test program.
