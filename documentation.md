@@ -235,7 +235,7 @@ This circuit translates the memory byte-address to word-address and extract acce
 
 The circuit receives 3 inputs: the computed address `Add` from the ALU, `DataIn` for write, and the `BA` signal specifying whether this instruction works with byte instead of word.
 
-Bits 0-21 of `Add` are extracted, then the least 2 bits are separated from those bit to output `Id`, which is the position of the selected byte from the Word address. The other 20 bits are used as the word address `WA` in the RAM.
+Bits 0-21 of `Add` are extracted, then the least 2 bits are separated from those bit to output `Id`, which is the position of the selected byte from the Word address. The other 20 bits are used as the word address `WA` in  RAM.
 
 `Id` and `DataIn` go through the circuit BytePos to get the formatted output `DataOut`.
 
@@ -255,9 +255,33 @@ If `BA` is activated, then `Id` goes through a 2-to-4 decoder to turn on the des
 
 ### RamOutputFmt
 
+This circuit formats the output from RAM for `LB/LW` instructions. It receive 3 inputs: 32-bit `Data` from RAM, the byte position `Id` and the `BA` signal indicating whether to handle `LB`.
+
+If `BA` is not activated, the circuit assumes that it is running the `LW` instruction. The selector bits are `1111`, so the whole `Data` will be outputted.
+
+If `BA` is activated, the circuit converts the `Id` to selector bits using the Id2Sel circuit, then each bit will be sign-extended and put through the MUX along with the bytes extracted from `Data`. The output of this process is the 32-bit data with the selected byte remains intact, and other bytes are 0. It goes through the Logisim bit selector which selects the bit group `Id`, then it is sign-extended and become the output of this circuit.
+
+It should be note that, if the processor runs `LB`, RAM will select one byte from its word, then invalidate all other bits (value `x` in Logisim, instead of `0` or `1`). Therefore, a MUX with extended sample bits is needed to format such invalidated bits.
+
 ![RAM output formatter](imgs/ramoutputfmt.png)
 
 ## Write-back
+
+At this stage, after computing necessary values, the processor writes those value back to the register file.
+
+A MUX is used to determine which output to be written to the register file. The signal `is_IL` from the Controller circuit chooses the output. Combined with the `WE` signal, also from the Controller, the processor can control whether to write content to the register file according to the current instruction.
+
+Below is the table of instruction formats, relevant signals, the data origin/destination and what the ALU calculates for each instruction format:
+
+|Format|`is_IL`|`WE`|ALU calculates|From|To|
+|:-:|:-:|:-:|:-:|:-:|:-:|
+|R-type|0|1|value|Register|Register|
+|I-type|0|1|value|Register, `imm`|Register|
+|IL-type|1|1|address|RAM|Register|
+|S-type|0|0|address|Register|RAM|
+|U-type|0|1|value|`imm`|Register|
+
+![Write-back stage](imgs/writeback.png)
 
 ## Special handling for specific instructions
 
