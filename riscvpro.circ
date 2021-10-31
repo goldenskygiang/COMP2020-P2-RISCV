@@ -138,6 +138,7 @@ end TCL_Generic;&#13;
     <a name="circuitvhdlpath" val=""/>
     <wire from="(1230,760)" to="(1230,970)"/>
     <wire from="(60,290)" to="(60,610)"/>
+    <wire from="(940,360)" to="(940,500)"/>
     <wire from="(960,350)" to="(960,420)"/>
     <wire from="(1350,950)" to="(1640,950)"/>
     <wire from="(1450,680)" to="(1450,770)"/>
@@ -164,7 +165,6 @@ end TCL_Generic;&#13;
     <wire from="(90,570)" to="(100,570)"/>
     <wire from="(840,290)" to="(980,290)"/>
     <wire from="(1440,790)" to="(1460,790)"/>
-    <wire from="(940,320)" to="(940,500)"/>
     <wire from="(700,630)" to="(750,630)"/>
     <wire from="(710,300)" to="(710,440)"/>
     <wire from="(870,190)" to="(870,520)"/>
@@ -176,7 +176,6 @@ end TCL_Generic;&#13;
     <wire from="(1080,240)" to="(1080,560)"/>
     <wire from="(870,520)" to="(970,520)"/>
     <wire from="(180,550)" to="(180,570)"/>
-    <wire from="(940,320)" to="(980,320)"/>
     <wire from="(620,300)" to="(620,380)"/>
     <wire from="(1230,720)" to="(1280,720)"/>
     <wire from="(1100,230)" to="(1100,500)"/>
@@ -231,13 +230,14 @@ end TCL_Generic;&#13;
     <wire from="(1220,260)" to="(1220,420)"/>
     <wire from="(1600,770)" to="(1620,770)"/>
     <wire from="(720,900)" to="(1490,900)"/>
-    <wire from="(760,260)" to="(760,320)"/>
     <wire from="(60,290)" to="(580,290)"/>
     <wire from="(1430,680)" to="(1450,680)"/>
+    <wire from="(930,270)" to="(930,320)"/>
     <wire from="(760,260)" to="(770,260)"/>
+    <wire from="(930,320)" to="(980,320)"/>
     <wire from="(590,440)" to="(710,440)"/>
     <wire from="(940,500)" to="(940,700)"/>
-    <wire from="(760,320)" to="(940,320)"/>
+    <wire from="(760,360)" to="(940,360)"/>
     <wire from="(180,450)" to="(180,460)"/>
     <wire from="(1060,500)" to="(1100,500)"/>
     <wire from="(1270,240)" to="(1630,240)"/>
@@ -260,6 +260,7 @@ end TCL_Generic;&#13;
     <wire from="(550,200)" to="(580,200)"/>
     <wire from="(1270,240)" to="(1270,680)"/>
     <wire from="(590,560)" to="(810,560)"/>
+    <wire from="(760,260)" to="(760,360)"/>
     <wire from="(180,570)" to="(180,620)"/>
     <wire from="(960,420)" to="(1220,420)"/>
     <wire from="(650,720)" to="(1230,720)"/>
@@ -300,7 +301,9 @@ xori x5, x5, -1
 slt x6, x1, x3
 slt x7, x2, x1
 slt x8, x4, x2
-slti x9, x3, 0
+
+# make sure the B port is connected to the correct wire
+slti x9, x3, 1
 addi x10, x0, 4
 sll x7, x7, x10
 or x10, x8, x7

@@ -287,7 +287,15 @@ Below is the table of instruction formats, relevant signals, the data origin/des
 
 ### SLL, SRA, LUI
 
+These 3 instructions are shifting instructions, with `LUI` having a constant shift amount and direction (`SLL` 12 bits). To avoid the complexity of handling different instructions that do the same thing, a separate circuit SA is needed to obtain the shift amount and feed it to the SA port of the ALU.
+
+The xB port of the register file is directly connected to the SA circuit, instead of the MUX output of that port, since there is no shifting instruction that uses `imm` shift amount.
+
 ### SLT, SLTI
+
+These instructions check if the value `R[rs1]` is smaller than either the value of `R[rs2]` (`SLT`) or `imm` (`SLTI`). Since this instruction is not available in the ALU but in the blackbox comparator instead, the wire from port xA and another one from the MUX in front of the xB port of the register file is connected to the comparator.
+
+The signal `SLT` is activated whenever the instruction is either `SLT` or `SLTI`, and is connected to the `Signed` port of the comparator to indicate signed integer comparison. It is also connected to the outer MUX selector before the write-back MUX to select the zero-extended comparator output.
 
 ## Testing strategy
 
