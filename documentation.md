@@ -183,11 +183,13 @@ Handling for `SLT, SLL, SRA` is written in the later part of this document.
 
 ### I-type format
 
-I-type is different from R-type that the value of the `rs2` register is replaced by a 32-bit sign-extended immediate value (`INSN` is one of `ANDI, ORI, XORI, ADDI`):
+I-type is different from R-type that the value of the `rs2` register is replaced by a 32-bit sign-extended immediate value. The following syntax applies for most I-type instructions (IL-type ones are excluded, `INSN` is one of `ANDI, ORI, XORI, ADDI`):
 
 `R[rd] = R[rs1] INSN sign_extend(imm)`
 
-For that reason, a MUX is put next to the `xB` register read port, with 2 inputs: the value of the register `xB` and the immediate value. The selector bit is the `OR` of `is_S` and `is_IL` signal from the Controller. It means that if the instruction is either S-type or IL-type, the value `B` of the ALU will use the immediate value (since both formats replace `R[rs2]` with `imm`).
+For that reason, a MUX is put next to the `xB` register read port, with 2 inputs: the value of the register `xB` and the immediate value. The selector bit is the `OR` of `is_S` and `is_I` signal from the Controller. It means that if the instruction is either S-type or IL-type, the value `B` of the ALU will use the immediate value (since both formats replace `R[rs2]` with `imm`).
+
+For IL-type instructions `LB, LW`, the ALU will calculate the address similarly to an `ADDI` instruction, then send that output to the Memory stage.
 
 ### S-type format
 
