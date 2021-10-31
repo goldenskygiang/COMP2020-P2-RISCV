@@ -301,4 +301,4 @@ The signal `SLT` is activated whenever the instruction is either `SLT` or `SLTI`
 
 The testing strategy for this processor is to ensure that the datapath, ALU opcode (if necessary) and handling of memory (if necessary) for each instruction is correct, therefore guarantees that each instruction will work as expected.
 
-The test file is written by hand with random values. It covers all specified instructions above. Some noticeable mistakes in value behavior and component wiring are commented in the test program.
+The test file is written by hand with random values. It covers all specified instructions above. Some possible mistakes in value behavior and component wiring are commented in the test program.
