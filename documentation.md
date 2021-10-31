@@ -243,7 +243,7 @@ Bits 0-21 of `Add` are extracted, then the least 2 bits are separated from those
 
 ### Id2Sel
 
-This circuit converts the `Id` byte position to the actual 4-bit bit selector for the RAM to work.
+This circuit converts the `Id` byte position to the actual 4-bit bit selector for RAM to work.
 
 The circuit receives two inputs: `Id` and the signal `BA` indicating the load/store instructions deal with byte or not.
 
