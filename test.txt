@@ -22,7 +22,7 @@ sub x4, x3, x4
 and x5, x1, x4
 andi x5, x5, 0x7ff
 xor x5, x1, x1
-sw x1, 5(x0)
+sw x1, 4(x0)
 xori x5, x5, 0x561
 
 # bitwise logical inverse
