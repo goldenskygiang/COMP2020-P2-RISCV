@@ -23,7 +23,7 @@ sub x4, x3, x4          #x4 = 0xFFFFFF90
 and x5, x1, x4          #x5 = 0x008FF000
 andi x5, x5, 0x7ff      #x5 = 0x00000000
 xor x5, x1, x1          #x5 = 0x00000000
-sw x1, 5(x0)            #W1 = 0x008FF000
+sw x1, 4(x0)            #W1 = 0x008FF000
 xori x5, x5, 0x561      #x5 = 0x00000561
 
 # bitwise logical inverse
@@ -35,8 +35,16 @@ slt x7, x2, x1          #x7 = 0x00000001
 slt x8, x4, x2          #x8 = 0x00000001
 
 # make sure the B port is connected to the xB MUX output, not the xB register.
+<<<<<<< HEAD
 slti x9, x3, 1          #x9 = 0x00000001
 addi x10, x0, 4         #x10 = 0x00000004
 sll x7, x7, x10         #x7 = 0x00000010
 or x10, x8, x7          #x10 = 0x00000011
 ori x10, x10, 0x300     #x10 = 0x00000311
+=======
+slti x9, x3, 1
+addi x10, x0, 4
+sll x7, x7, x10
+or x10, x8, x7
+ori x10, x10, 0x300
+>>>>>>> 3ceb8d7106ad60475f4dd07a7a15d864cba14406
