@@ -275,39 +275,48 @@ end TCL_Generic;&#13;
       <a name="width" val="32"/>
     </comp>
     <comp lib="10" loc="(460,380)" name="RISC-VProgramROM">
-      <a name="contents">lui x0, 15323
-addi x1, x0, 0x123
-addi x2, x0, 3
-sll x1, x1, x2
-addi x2, x2, -1
-sra x1, x1, x2
-lui x1, 2048
-lui x2, 255
-add x1, x1, x2
-sw x1, 0(x0)
-sb x1, 1(x0)
-lb x3, 2(x0)
-lw x4, 0(x0)
-addi x5, x0, 16
-sra x4, x4, x5
-sra x4, x3, x5
-sub x4, x3, x4
-and x5, x1, x4
-andi x5, x5, 0x7ff
-xor x5, x1, x1
-sw x1, 5(x0)
-xori x5, x5, 0x561
-xori x5, x5, -1
-slt x6, x1, x3
-slt x7, x2, x1
-slt x8, x4, x2
+      <a name="contents">lui x0, 15323           #x0 = 0x00000000
+addi x1, x0, 0x123      #x1 = 0x00000123
+addi x2, x0, 3          #x2 = 0x00000003
+sll x1, x1, x2          #x1 = 0x00000918
+addi x2, x2, -1         #x2 = 0x00000002
+sra x1, x1, x2          #x1 = 0x00000246
+lui x1, 2048            #x1 = 0x00800000
+lui x2, 255             #x2 = 0x000FF000
+add x1, x1, x2          #x1 = 0x008FF000
+sw x1, 0(x0)            #W0 = 0x008FF000
 
-# make sure the B port is connected to the correct wire
-slti x9, x3, 1
-addi x10, x0, 4
-sll x7, x7, x10
-or x10, x8, x7
-ori x10, x10, 0x300
+#store correct byte
+sb x1, 1(x0)            #W0 = 0x008F0000
+
+# sign-extend value before loading
+# load correct byte
+lb x3, 2(x0)            #x3 = 0xFFFFFF8F
+lw x4, 0(x0)            #x4 = 0x008F0000
+addi x5, x0, 16         #x5 = 0x00000010
+sra x4, x4, x5          #x4 = 0x0000008F
+sra x4, x3, x5          #x4 = 0xFFFFFFFF
+sub x4, x3, x4          #x4 = 0xFFFFFF90
+and x5, x1, x4          #x5 = 0x008FF000
+andi x5, x5, 0x7ff      #x5 = 0x00000000
+xor x5, x1, x1          #x5 = 0x00000000
+sw x1, 5(x0)            #W1 = 0x008FF000
+xori x5, x5, 0x561      #x5 = 0x00000561
+
+# bitwise logical inverse
+xori x5, x5, -1         #x5 = 0xFFFFFA9E (-1 == 0xFFFFFFFF)
+
+# test SLT wiring
+slt x6, x1, x3          #x6 = 0x00000000
+slt x7, x2, x1          #x7 = 0x00000001
+slt x8, x4, x2          #x8 = 0x00000001
+
+# make sure the B port is connected to the xB MUX output, not the xB register.
+slti x9, x3, 1          #x9 = 0x00000001
+addi x10, x0, 4         #x10 = 0x00000004
+sll x7, x7, x10         #x7 = 0x00000010
+or x10, x8, x7          #x10 = 0x00000011
+ori x10, x10, 0x300     #x10 = 0x00000311
 </a>
     </comp>
     <comp loc="(180,460)" name="IC4">
